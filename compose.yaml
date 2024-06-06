@@ -1,20 +1,16 @@
 # https://docs.docker.com/go/compose-spec-reference/
-name: d7system
-
 networks:
-  app-local-network:
-    name: the-application-local-network
+  local-network:
+    name: local-network
     driver: bridge
-
 
 services:
 
   apache:
     container_name: app.application.apache
-    build:
-      context: './docker/apache'
+    build: './docker/apache'
     networks:
-      - app-local-network
+      - local-network
     depends_on:
       - php-fpm
     ports:
@@ -26,8 +22,68 @@ services:
     container_name: app.application.php
     build:
       context: './docker/php'
+      args:
+        - APP_ENV=${APP_ENV}
+    depends_on:
+      database:
+        condition: service_healthy
     networks:
-       - app-local-network
+       - local-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      PHP_IDE_CONFIG: 'serverName=host.docker.internal'
     volumes:
       - ./:/var/www/html/
       - ./docker/php/upload.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+#  mariadb:
+#    container_name: app.application.mariadb
+#    image: 'mariadb:10.4'
+#    environment:
+#      MYSQL_ROOT_PASSWORD: secret
+#      MYSQL_DATABASE: mariadb
+#    ports:
+#      # To allow the host machine to access the ports below, modify the lines below.
+#      # For example, to allow the host to connect to port 3306 on the container, you would change
+#      # "3306" to "3306:3306". Where the first port is exposed to the host and the second is the container port.
+#      # See https://docs.docker.com/compose/compose-file/compose-file-v3/#ports for more information.
+#      - "3306"
+#    networks:
+#      - local-network
+#    volumes:
+#      - ./docker/database/data:/var/lib/mysql
+#      - ./docker/database/my.cnf:/etc/mysql/conf.d/custom.cnf
+#    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+#    healthcheck:
+#      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+#    restart: always
+
+  database:
+    container_name: app.application.postgres
+    image: postgres:16.3-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    ports:
+      - "5432"
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+    networks:
+     - local-network
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB:-app_db}", "-U", "${POSTGRES_USER:-postgres}" ]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: always
+
+volumes:
+  database_data:
+
+
+#secrets:
+# db-password:
+#   file: ./docker/database/password.txt
