@@ -1,0 +1,33 @@
+# https://docs.docker.com/go/compose-spec-reference/
+name: d7system
+
+networks:
+  app-local-network:
+    name: the-application-local-network
+    driver: bridge
+
+
+services:
+
+  apache:
+    container_name: app.application.apache
+    build:
+      context: './docker/apache'
+    networks:
+      - app-local-network
+    depends_on:
+      - php-fpm
+    ports:
+      - "8001:80"
+    volumes:
+      - ./:/var/www/html/
+
+  php-fpm:
+    container_name: app.application.php
+    build:
+      context: './docker/php'
+    networks:
+       - app-local-network
+    volumes:
+      - ./:/var/www/html/
+      - ./docker/php/upload.ini:/usr/local/etc/php/conf.d/custom.ini
