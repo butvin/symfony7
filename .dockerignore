@@ -4,16 +4,11 @@
 # For more help, visit the .dockerignore file reference guide at
 # https://docs.docker.com/go/build-context-dockerignore/
 
-#**/.classpath
-**/.dockerignore
-#**/.env
-#**/.git
-#**/.gitignore
-#**/.project
-#**/.settings
-#**/.toolstarget
-#**/.vs
-#**/.vscode
+.dockerignore
+Makefile
+.idea
+.vscode
+.DS_Store
 #**/.next
 #**/.cache
 #**/*.*proj.user
@@ -24,13 +19,7 @@
 **/compose.y*ml
 !**/composer.json
 !**/composer.lock
-#**/Dockerfile*
-#**/node_modules
-#**/npm-debug.log
-#**/obj
-#**/secrets.dev.yaml
-#**/values.dev.yaml
-**/vendor
+
 
 var/
 vendor/
