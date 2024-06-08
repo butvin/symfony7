@@ -16,6 +16,14 @@ class IndexRepository extends ServiceEntityRepository
         parent::__construct($registry, Index::class);
     }
 
+        public function findAllAsArray(): array
+        {
+            return $this->createQueryBuilder('i')
+                ->orderBy('i.id', 'ASC')
+                ->getQuery()
+                ->getArrayResult()
+            ;
+        }
     //    /**
     //     * @return Index[] Returns an array of Index objects
     //     */

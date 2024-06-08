@@ -1,4 +1,6 @@
 {
+    "name": "butvin/symfony7",
+    "description": "Testing the Symfony framework v.7.1 on PHP 8.3.7",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",

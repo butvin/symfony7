@@ -3,10 +3,8 @@ FROM php:8.3-fpm
 
 ARG APP_ENV=$APP_ENV
 
-ARG
-
 ## Copy app files from the app directory.
-COPY ../../ /var/www/html
+# COPY ../../ /var/www/html
 
 # https://github.com/docker-library/docs/tree/master/php#how-to-install-more-php-extensions
 # https://github.com/docker-library/docs/tree/master/php#php-core-extensions
