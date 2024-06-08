@@ -1,10 +1,13 @@
 # syntax=docker/dockerfile:1
 FROM php:8.3-fpm
 
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Argument passed from file compose.yaml
 ARG APP_ENV=$APP_ENV
 
-## Copy app files from the app directory.
-# COPY ../../ /var/www/html
+# todo: Copy app files from the app directory, excluding .dockerignore files.
+COPY ../.. /var/www/html
 
 # https://github.com/docker-library/docs/tree/master/php#how-to-install-more-php-extensions
 # https://github.com/docker-library/docs/tree/master/php#php-core-extensions
@@ -27,11 +30,10 @@ RUN set -ex; \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 
-#RUN apt-get update && apt-get install -y \
-#    libicu-dev \
+#RUN apt-get update && apt-get install -y libicu-dev \
 #  && docker-php-ext-configure intl \
-#  && docker-php-ext-install intl
-
+#  && docker-php-ext-install intl \
+#  && docker-php-ext-enable intl \
 
 
 RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql \
@@ -39,12 +41,13 @@ RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql \
 
 # Add PECL extensions, see
 # https://github.com/docker-library/docs/tree/master/php#pecl-extensions
-# This example adds the 'redis' and 'xdebug' .
+# This example adds the 'redis' and 'xdebug'.
 RUN pecl update-channels && pecl install xdebug  && docker-php-ext-enable xdebug
 
 
 # Compile 'rdkafka' extensions from source code.
 #ENV LIBRDKAFKA_VERSION v0.11.0
+#
 #ENV BUILD_DEPS \
 #    build-essential \
 #    git \
@@ -97,8 +100,11 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 # Switch to a non-privileged user (defined in the base image) that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
+
 #USER www-data
 
 WORKDIR /var/www/html
+
+EXPOSE 9000
 
 CMD ["php-fpm"]

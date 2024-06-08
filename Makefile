@@ -1,4 +1,5 @@
 #  This Makefile is a tool for building, up, down, running, and cleaning the project data
+## A
 
 ## SECTION #1
 
@@ -96,8 +97,10 @@ endif
 
 
 # Container names
-#PHP=$(PREFIX).$(APPLICATION).php
 PHP=app.application.php
+APP=app.application.php
+
+#PHP=$(PREFIX).$(APPLICATION).php
 APACHE=$(PREFIX).$(APPLICATION).apache
 REDIS=$(PREFIX).$(APPLICATION).redis
 DATABASE=$(PREFIX).$(APPLICATION).database
@@ -121,138 +124,113 @@ DATABASE=$(PREFIX).$(APPLICATION).database
 #MYSQL_HOST=localhost
 
 
+
+#---------------------------------------------------------------------------------------------------------------------
+
+
+
 logs:
 	$(COMPOSE) logs -f --tail all
-	@echo "logs"
 up:
 	$(COMPOSE) up -d
-	@echo "up"
 ps:
 	$(COMPOSE) ps
-	@echo "ps"
 restart:
 	$(COMPOSE) restart
-	@echo "restart"
 stop:
 	$(COMPOSE) stop
-	@echo "stop"
 start:
 	$(COMPOSE) start
-	@echo "start"
 down:
 	$(COMPOSE) down
-	@echo "down"
 top:
 	$(COMPOSE) top
-	@echo "top"
 kill:
 	$(COMPOSE) kill
-	@echo "kill"
-
-ll:
-	$(DOCKER) ps \
-		--all \
-		--filter 'name=$(PREFIX)' \
-		--format "table {{ .Names }}\t{{ .Image }}\t{{ .Status }}\t{{ .Ports }}\t{{ .Size }}"
 
 
-htop:
-	$(DOCKER) stats \
-		--all \
-		--no-trunc \
-		--format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.BlockIO}}\t{{.MemPerc}}\t{{.PIDs}}"
+
+#---------------------------------------------------------------------------------------------------------------------
+
 
 
 build:
-	$(COMPOSE) down -v --rmi local --remove-orphans
-	$(COMPOSE) up -d --build --force-recreate
-	@echo "build"
-
-
-install: composer
-
-
-update: composer
-
-
-clean:
-	$(COMPOSE) down -v --rmi all --remove-orphans
-	@echo "clean"
-
-
-prune:
-	$(COMPOSE) down -v --rmi all --remove-orphans
-	$(DOCKER) system prune --all --volumes --force
-	@echo "prune"
-
-
-fresh:
-	$(COMPOSE) stop -t 1
-	$(COMPOSE) down -v --rmi all --remove-orphans
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
-	@echo "fresh"
 
 
 composer:
 	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction'
-	@echo "composer"
+
+install: composer migrate
+update:
+	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer update'
+
+clean:
+	$(COMPOSE) down -v --rmi local --remove-orphans
+	@echo "Cleaning successfully finished"
 
 
-status:
-	@echo "APPLICATION:\t$(APP_NAME)"
-	@echo "PHP:\t"
-	$(DOCKER) exec -it $(PHP) php -v
-	@echo "DATABASE:\n"
-	$(DOCKER) exec -it $(DATABASE) mysql -vvv --user=$(MYSQL_USER) --password=$(MYSQL_ROOT_PASSWORD) --execute='SHOW DATABASES'
-	$(DOCKER) ps --all
-
-#---------------------------------------------------------------------------------------------------------------------
-
-
-#compose := $(COMPOSE) --project-name $(COMPOSE_PROJECT_NAME) -f docker-compose.yml \
-#		-f ./docker/docker-compose.override.yml \
-#		-f ./docker/docker-compose.$(APP_ENV).yml \
-#		-f ./docker/docker-compose.$(APP_ENV).override.yml \
-#		-f ./docker/docker-compose.$(APP_ENV).local.yml \
-#		-f ./docker/docker-compose.$(APP_ENV).local.override.yml \
-#		-f ./docker/common/docker-compose.$(APP_ENV).telegram.$(COMPOSE_PROJECT_NAME).yml \
-#		-f ./docker/common/docker-compose.$(APP_ENV).skype.$(COMPOSE_PROJECT_NAME).yml \
-#		-f ./docker/common/docker-compose.$(APP_ENV).callback.$(COMPOSE_PROJECT_NAME).yml \
-#		-f ./docker/common/docker-compose.$(APP_ENV).local.$(COMPOSE_PROJECT_NAME).yml \
-#	--env-file .env.example \
-#	--env-file .env.example.local \
-#	--env-file .env.example.$(APP_ENV)
-
+#fresh:
+#	$(COMPOSE) stop -t 1
+#	$(COMPOSE) down -v --rmi all --remove-orphans
+#	$(COMPOSE) build --no-cache
+#	$(COMPOSE) up -d --force-recreate
+#	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/vendor
+#	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/var
+#	$(DOCKER) exec -it $(PHP) composer install --ignore-platform-reqs --no-interaction -vvv
+#	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:migrate
+#	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:status
 
 
 
 #---------------------------------------------------------------------------------------------------------------------
+
+
+
+ll:
+	$(DOCKER) ps \
+		--all \
+		--filter "name=$(PREFIX)" \
+		--format \
+			"table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Size}}"
+
+htop:
+	$(DOCKER) stats \
+		--all \
+		--no-trunc \
+		--format \
+			"table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.BlockIO}}\t{{.MemPerc}}\t{{.PIDs}}"
+
 php:
-	$(DOCKER) exec -it $(PHP) bash
+	$(DOCKER) exec -it $(PHP) /bin/bash
 
-fish:
+
+
+#---------------------------------------------------------------------------------------------------------------------
+
+
+
+app:
 	$(DOCKER) exec -it $(PHP) fish
 
+migrate:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:status -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:latest -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate -vvv"
 
-app: fish
-
-app-from-scratch:
-	cp ./docker/.env.example ./.env
-	cp ./docker/Makefile.example ./Makefile
-
-app-to-scratch:
-	cp ./.env ./docker/.env.example
-	cp ./Makefile ./docker/Makefile.example
+cc:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console c:c -vvv"
 
 app-new-symfony-stable-docker:
 	$(DOCKER) exec -it $(PHP) bash -c \
-		'symfony new "application-$(APP_NAME)" --dir="/var/www/html/application-$(APP_NAME)"  --version="stable" --php="8.2" --no-git --docker --debug'
+		'symfony new "application-$(APP_NAME)" --dir="/var/www/html/application-$(APP_NAME)" --version="stable" --php="8.3" --no-git --docker --debug'
 
 app-new-symfony-application-stable-raw:
-	symfony new 'application-$(APP_NAME)' --dir='/var/www/html/application-$(APP_NAME)' --php='8.2' --version='stable' \
+	symfony new 'application-$(APP_NAME)' --dir='./application-$(APP_NAME)' --php='8.3' --version='stable' \
 		--no-git \
 		--docker \
 		--debug

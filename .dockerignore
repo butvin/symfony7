@@ -3,23 +3,16 @@
 #
 # For more help, visit the .dockerignore file reference guide at
 # https://docs.docker.com/go/build-context-dockerignore/
-
-.dockerignore
-Makefile
-.idea
+**/.dockerignore
+**/docker/
+**/Makefile
+**/.idea/
 .vscode
 .DS_Store
-#**/.next
-#**/.cache
-#**/*.*proj.user
-#**/*.dbmdl
-#**/*.jfm
-#**/charts
+**/.git/
 **/docker-compose*
 **/compose.y*ml
 !**/composer.json
 !**/composer.lock
-
-
-var/
-vendor/
+**/var/
+**/vendor/
