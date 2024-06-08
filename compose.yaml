@@ -20,7 +20,8 @@ services:
   php-fpm:
     container_name: app.application.php
     build:
-      context: './docker/php'
+      context: .
+      dockerfile: './docker/php/Dockerfile'
       args:
         - APP_ENV=${APP_ENV}
     depends_on:
@@ -43,7 +44,7 @@ services:
     container_name: app.application.postgres
     image: postgres:16.3-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+      POSTGRES_DB: ${POSTGRES_DB:-symfony7_db}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
     ports:
@@ -53,7 +54,7 @@ services:
     networks:
      - local-network
     healthcheck:
-      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB:-app_db}", "-U", "${POSTGRES_USER:-postgres}" ]
+      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB:-symfony7_db}", "-U", "${POSTGRES_USER:-postgres}" ]
       timeout: 5s
       retries: 5
       start_period: 60s
