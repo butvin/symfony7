@@ -173,16 +173,16 @@ clean:
 	@echo "Cleaning successfully finished"
 
 
-#fresh:
-#	$(COMPOSE) stop -t 1
-#	$(COMPOSE) down -v --rmi all --remove-orphans
-#	$(COMPOSE) build --no-cache
-#	$(COMPOSE) up -d --force-recreate
-#	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/vendor
-#	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/var
-#	$(DOCKER) exec -it $(PHP) composer install --ignore-platform-reqs --no-interaction -vvv
-#	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:migrate
-#	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:status
+fresh:
+	$(COMPOSE) stop -t 1
+	$(COMPOSE) down -v --rmi all --remove-orphans
+	$(COMPOSE) build --no-cache
+	$(COMPOSE) up -d --force-recreate
+	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/vendor
+	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/var
+	$(DOCKER) exec -it $(PHP) composer install --ignore-platform-reqs --no-interaction -vvv
+	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:migrate
+	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:status
 
 
 

@@ -4,16 +4,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Index;
+use App\Repository\IndexRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
-use Random\RandomException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
-use App\Repository\IndexRepository;
 
 class IndexController extends AbstractController
 {
@@ -23,63 +20,88 @@ class IndexController extends AbstractController
     ) {
     }
 
-    #[Route('/index/{id}', name: 'app_index_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(int $id): JsonResponse
-    {
-        $index = $this->repository->find($id);
-
-        return $this->json(
-            [
-                'hash' => $index ? $index->getHash() : null,
-            ],
-        );
-    }
-
     #[Route('/index/index', name: 'app_index_index', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
+        return $this->json(phpinfo());
+    }
+
+    #[Route('/index/{id}', name: 'app_index_show', methods: ['GET'])]
+    public function show(string $uuid): JsonResponse
+    {
+        $index = $this->repository->findOneBy(['uuid', $uuid]);
+
+        if (!$index instanceof Index || $index->getDeletedAt() !== null) {
+            return $this->json("no data by uuid " . $uuid, Response::HTTP_NOT_FOUND);
+        }
+
         return $this->json(
-            $this->repository->findAllAsArray()
+            $index->getHash()
         );
     }
 
-    /**
-     * @throws RandomException
-     * @throws Exception
-     */
-    #[Route('/index/add', name: 'app_index_add', methods: ['POST', 'GET'])]
+    #[Route('/index/{id}', name: 'app_index_delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function delete(string $uuid): JsonResponse
+    {
+        $index = $this->repository->findOneBy(['uuid', $uuid]);
+
+        if (!$index instanceof Index || $index->getDeletedAt() !== null) {
+            return $this->json("not found by uuid" . $uuid, Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($index->getHash(), Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/index/add',
+        name: 'app_index_add',
+        methods: ['POST'],
+    )]
     public function add(Request $request): JsonResponse
     {
         $name = $request->request->get('name') ;
-        //$hash = $request->request->get('hash');
 
-        $index = new Index();
-        $index->setName(
-            $name ?? 'noname' . "_" . md5(base64_decode(random_bytes(8)))
-        );
-        $index->setHash(md5(base64_decode(random_bytes(32))));
-        $index->setActive(true);
-        $index->setCreatedAt(new \DateTimeImmutable(
-            'now',
-            new \DateTimeZone('Europe/Kiev')
-        ));
-        $index->setUpdatedAt(new \DateTimeImmutable(
-            'now',
-            new \DateTimeZone('Europe/Berlin')
-        ));
+        if (null === $name) {
+            $name = md5(base64_decode(random_bytes(4)));
+        }
 
+        $index = (new Index())
+            ->setName($name)
+            ->setHash(sha1(md5($name)))
+            ->setActive(true)
+            ->setCreatedAt(new \DateTimeImmutable())
+        ;
+
+        // todo: validate entity
         $this->em->persist($index);
+        // todo: dispatch event
         $this->em->flush();
 
         return new JsonResponse(
             [
-                'message' => sprintf('Saved successfully with id: %s',  $index->getId()),
-                'hash' => $index->getHash(),
+                'success' => true,
+                'message' => sprintf("Hash '%s' saved with uuid: '%s'", $index->getHash(), $index->getUuid()),
+                'data' => [
+                    'uuid' => $index->getUuid(),
+                    'name' => $index->getName(),
+                    'active' => $index->getActive(),
+                    'hash' => $index->getHash(),
+                    'createdAt' => $index->getCreatedAt()?->format('Y-m-d H:i:s'),
+                ],
             ],
             Response::HTTP_OK,
             [
                 'Access-Control-Allow-Origin' => '*',
             ]
+        );
+    }
+
+    #[Route('/index/all', name: 'app_index_all', methods: ['GET'])]
+    public function all(Request $request): JsonResponse
+    {
+        $data = $this->repository->findAllAsArray();
+
+        return $this->json(
+            empty($data) ? 'no data found' : $data,
         );
     }
 }
