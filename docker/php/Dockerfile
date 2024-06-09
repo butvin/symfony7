@@ -7,7 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG APP_ENV=$APP_ENV
 
 # todo: Copy app files from the app directory, excluding .dockerignore files.
-COPY ../.. /var/www/html
+COPY ../../* /var/www/html
 
 # https://github.com/docker-library/docs/tree/master/php#how-to-install-more-php-extensions
 # https://github.com/docker-library/docs/tree/master/php#php-core-extensions
@@ -16,7 +16,7 @@ RUN set -ex; \
   apt-get update && apt-get install -y \
     curl \
     wget \
-    unzin \
+    unzip \
     locales \
     libzip-dev \
     libfreetype-dev \
@@ -94,7 +94,7 @@ RUN if [ ${APP_ENV} = "dev" ]; then \
     fi
 
 
-# Use the default production configuration for PHP runtime arguments, see
+# Use the default production or development configuration for PHP runtime arguments, see
 # https://github.com/docker-library/docs/tree/master/php#configuration
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 #RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"

@@ -32,12 +32,12 @@ endif
 # Use 'docker compose' as engine instead a legacy plugin 'docker-compose'.
 # Actually it is the same thing, but the first one is a new way to use docker-compose.
 # [docs](https://docs.docker.com/compose/migrate/)
-COMPOSE=docker --log-level debug compose
+COMPOSE=docker --log-level trace compose
 ifndef COMPOSE
 $(error COMPOSE is not set)
 endif
 
-DOCKER=docker --log-level debug
+DOCKER=docker --log-level trace
 ifndef DOCKER
 $(error DOCKER is not set)
 endif

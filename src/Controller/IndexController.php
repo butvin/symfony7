@@ -102,11 +102,15 @@ class IndexController extends AbstractController
         );
     }
 
-    #[Route('/index/all', name: 'app_index_all', methods: ['GET'])]
-    public function all(Request $request): JsonResponse
+    #[Route('/index/list', name: 'app_index_list', methods: ['GET'])]
+    public function list(Request $request): JsonResponse
     {
-        $data = $this->repository->findAllAsArray();
+        $list = $this->repository->findAllAsArray();
 
-        return $this->json(empty($data) ? 'no data found' : $data);
+        if (count($list) == 0) {
+            return $this->json('empty set', Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($list, Response::HTTP_OK);
     }
 }
