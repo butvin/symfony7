@@ -1,6 +1,6 @@
 {
     "name": "butvin/symfony7",
-    "description": "Testing the Symfony framework v.7.1 on PHP 8.3.7",
+    "description": "Testing  the Symfony framework v.7.1 on PHP 8.3.8",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -28,7 +28,8 @@
         "symfony/css-selector": "7.1.*",
         "symfony/maker-bundle": "^1.59",
         "symfony/phpunit-bridge": "^7.1",
-        "symfony/stopwatch": "7.1.*"
+        "symfony/stopwatch": "7.1.*",
+        "symfony/web-profiler-bundle": "7.1.*"
     },
     "config": {
         "allow-plugins": {

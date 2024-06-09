@@ -161,8 +161,8 @@ build:
 
 composer:
 	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
-	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction'
-	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction'
+	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction -vvv'
+	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
 install: composer migrate
 update:

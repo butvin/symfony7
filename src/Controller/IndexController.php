@@ -26,22 +26,25 @@ class IndexController extends AbstractController
         return $this->json(phpinfo());
     }
 
-    #[Route('/index/{id}', name: 'app_index_show', methods: ['GET'])]
-    public function show(string $uuid): JsonResponse
+    #[Route('/index/{id}', name: 'app_index_update', methods: ['GET', 'POST'])]
+    public function update(string $uuid, Request $request): JsonResponse
     {
-        $index = $this->repository->findOneBy(['uuid', $uuid]);
+        $index = $this->repository->findOneBy(['uuid' => $uuid]);
+        $data = json_decode($request->getContent(), true);
 
-        if (!$index instanceof Index || $index->getDeletedAt() !== null) {
-            return $this->json("no data by uuid " . $uuid, Response::HTTP_NOT_FOUND);
+        if ($index->getDeletedAt() !== null) {
+            return $this->json(["success" => false, "message" => "not found", "data" => null], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json(
-            $index->getHash()
-        );
+        // Get one entity by uuid
+        // Amplify data to this entity
+        // Store undated entity with new data to DB + add datetime to updated_at
+
+        return $this->json(["success" => true , "message" => "ok", "data" => $data]);
     }
 
-    #[Route('/index/{id}', name: 'app_index_delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
-    public function delete(string $uuid): JsonResponse
+    #[Route('/index/{id}', name: 'app_index_delete', methods: ['DELETE'])]
+    public function delete(string $uuid, Request $request): JsonResponse
     {
         $index = $this->repository->findOneBy(['uuid', $uuid]);
 
@@ -52,11 +55,15 @@ class IndexController extends AbstractController
         return $this->json($index->getHash(), Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @throws \Random\RandomException;
+     * @throws \Exception;
+     */
     #[Route('/index/add',
-        name: 'app_index_add',
+        name: 'app_index_create',
         methods: ['POST'],
     )]
-    public function add(Request $request): JsonResponse
+    public function create(Request $request): JsonResponse
     {
         $name = $request->request->get('name') ;
 
@@ -100,8 +107,6 @@ class IndexController extends AbstractController
     {
         $data = $this->repository->findAllAsArray();
 
-        return $this->json(
-            empty($data) ? 'no data found' : $data,
-        );
+        return $this->json(empty($data) ? 'no data found' : $data);
     }
 }
