@@ -32,7 +32,7 @@ endif
 # Use 'docker compose' as engine instead a legacy plugin 'docker-compose'.
 # Actually it is the same thing, but the first one is a new way to use docker-compose.
 # [docs](https://docs.docker.com/compose/migrate/)
-COMPOSE=docker --log-level trace compose
+COMPOSE=docker --log-level debug compose
 ifndef COMPOSE
 $(error COMPOSE is not set)
 endif
@@ -154,32 +154,32 @@ build:
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
 
+install:  composer migrate
+composer:composer-install
 
-composer:
+composer-install:
 	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction --optimize-autoloader -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
-update:
+
+composer-update:
 	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer update --ignore-platform-reqs --no-interaction -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
+
 clean:
 	$(COMPOSE) stop -t 1
 	$(COMPOSE) down -v --rmi local --remove-orphans
+
 
 fresh:
 	$(COMPOSE) stop -t 1
 	$(COMPOSE) down -v --rmi local --remove-orphans
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
-#	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/vendor
-#	$(DOCKER) exec -it $(PHP) rm -rf /var/www/html/var
-#	$(DOCKER) exec -it $(PHP) composer install --ignore-platform-reqs --no-interaction -vvv
-#	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:migrate --no-interaction
-#	$(DOCKER) exec -it $(PHP) php bin/console doctrine:migrations:status
 
 
 
@@ -203,7 +203,7 @@ symfony:
 	$(DOCKER) exec -it $(PHP) /bin/bash
 
 php-fpm:
-	$(COMPOSE) exec -u www-data php-fpm /bin/bash
+	$(COMPOSE) exec php-fpm /bin/bash
 
 #---------------------------------------------------------------------------------------------------------------------
 
@@ -211,7 +211,7 @@ app:
 	$(DOCKER) exec -it $(PHP) fish
 
 migrate:
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing -vvv"
 #	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
 #	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:status -vvv"
 #	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:latest -vvv"
@@ -219,12 +219,6 @@ migrate:
 
 cc:
 	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console c:c -vvv"
-
-
-
-#---------------------------------------------------------------------------------------------------------------------
-
-install: clean build composer migrate cc ps
 
 
 

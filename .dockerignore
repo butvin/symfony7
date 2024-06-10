@@ -3,11 +3,11 @@
 #
 # For more help, visit the .dockerignore file reference guide at
 # https://docs.docker.com/go/build-context-dockerignore/
-**/.dockerignore
+
 **/Makefile
 **/.idea/
 **/.vscode
-.DS_Store
+**/.DS_Store
 **/.git/
 **/docker-compose*
 **/compose.y*ml
@@ -15,6 +15,5 @@
 !**/composer.lock
 vendor/
 var/
-.env.test
-.phpunit.result.cache
-phpunit.xml.dist
+#**/.dockerignore
+#**/.gitignore

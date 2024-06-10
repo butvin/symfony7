@@ -5,7 +5,7 @@ networks:
     driver: bridge
 
 services:
-  apache:
+  httpd:
     container_name: app.application.apache
     build: './docker/apache'
     networks:
@@ -36,8 +36,8 @@ services:
       XDEBUG_TRIGGER: 1
     volumes:
       - ./:/var/www/html/
-      - ./docker/php/upload.ini:/usr/local/etc/php/conf.d/custom.ini
-      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+#      - ./docker/php/upload.ini:/usr/local/etc/php/conf.d/custom.ini
+#      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
     tty: true
 
   database:
@@ -48,7 +48,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
     ports:
-      - "5432"
+      - "32769:5432"
     volumes:
       - database_data:/var/lib/postgresql/data:rw
     networks:

@@ -1,19 +1,16 @@
 # syntax=docker/dockerfile:1
 FROM php:8.3-fpm
 
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Argument passed from file compose.yaml
-ARG APP_ENV=$APP_ENV
-
-# todo: Copy app files from the app directory, excluding .dockerignore files.
-COPY ../../* /var/www/html
+# arg passed from file compose.yaml
+ARG APP_ENV
 
 # https://github.com/docker-library/docs/tree/master/php#how-to-install-more-php-extensions
 # https://github.com/docker-library/docs/tree/master/php#php-core-extensions
 # https://docs.docker.com/go/dockerfile-aptget-best-practices/
-RUN set -ex; \
-  apt-get update && apt-get install -y \
+RUN set -eux; \
+  apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     unzip \
@@ -48,7 +45,7 @@ RUN pecl update-channels && pecl install xdebug  && docker-php-ext-enable xdebug
 
 # Compile 'rdkafka' extensions from source code.
 #ENV LIBRDKAFKA_VERSION v0.11.0
-#
+
 #ENV BUILD_DEPS \
 #    build-essential \
 #    git \
@@ -56,7 +53,7 @@ RUN pecl update-channels && pecl install xdebug  && docker-php-ext-enable xdebug
 #    libssl-dev \
 #    python-is-python3 \
 #    zlib1g-dev
-#
+
 #RUN apt-get update \
 #    && apt-get install -y --no-install-recommends ${BUILD_DEPS} \
 #    && cd /tmp \
@@ -78,10 +75,8 @@ RUN pecl update-channels && pecl install xdebug  && docker-php-ext-enable xdebug
 
 
 RUN if [ ${APP_ENV} = "dev" ]; then \
-        apt-get update && apt-get install -y \
+        apt-get update && apt-get install -y --no-install-recommends \
             bash-completion \
-            iputils-ping \
-            net-tools \
             fish \
             htop \
             tree \
@@ -99,10 +94,30 @@ RUN if [ ${APP_ENV} = "dev" ]; then \
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 #RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Switch to a non-privileged user (defined in the base image) that the app will run under.
-# See https://docs.docker.com/go/dockerfile-user-best-practices/
+# Copy app files from the app directory, excluding .dockerignore files.
+COPY --chown=1000:1000 . /var/www/html/
+COPY ./docker/php/xdebug.ini "$PHP_INI_DIR/docker-php-ext-xdebug.ini"
+COPY ./docker/php/upload.ini "$PHP_INI_DIR/custom.ini"
 
-#USER www-data
+# Set user ID & group ID & home directory & shell of www-data user.
+ARG UNAME=www-data
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+ARG USER_DIR=/home/www-data
+# Some commands may use home dir for caching (like composer, npm or yarn) or for another reason.
+RUN mkdir ${USER_DIR} && chown -R ${USER_ID}:${GROUP_ID} ${USER_DIR} \
+    && usermod --uid ${USER_ID} --home ${USER_DIR} --shell /bin/bash ${UNAME} \
+    && groupmod --gid ${GROUP_ID} ${UNAME}
+
+#RUN set -ex; \
+#    mkdir -p /home/www-data; \
+#    chown -R 1000:1000 /home/www-data; \
+#    usermod --uid 1000 --home /home/www-data --shell /bin/bash www-data; \
+#    groupmod --gid 1000  www-data
+
+# Switch to a non-privileged user (defined in the base image) that the app will run under.
+# https://docs.docker.com/go/dockerfile-user-best-practices/
+USER www-data
 
 WORKDIR /var/www/html
 
