@@ -9,25 +9,27 @@ use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: IndexRepository::class)]
-#[ORM\Table(name: 'index')]
+#[ORM\Table(name: "`INDEX_HASH`")]
+#[ORM\UniqueConstraint(name: "UNIQ_HASH", columns: ["hash"])]
+#[ORM\Index(name: "idx_i_created_at", columns: ["created_at"])]
 class Index
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    #[ORM\Column(type: UuidType::NAME)]
-    private ?Uuid $uuid = null;
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    private Uuid $uuid;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $hash = null;
+    #[ORM\Column(type: Types::TEXT, unique: true)]
+    private string $hash;
 
     #[ORM\Column]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $active = null;
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
+    private ?bool $active = false;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
@@ -41,12 +43,12 @@ class Index
         return $this->uuid;
     }
 
-    public function getHash(): ?string
+    public function getHash(): string
     {
         return $this->hash;
     }
 
-    public function setHash(?string $hash): static
+    public function setHash(string $hash): static
     {
         $this->hash = $hash;
 

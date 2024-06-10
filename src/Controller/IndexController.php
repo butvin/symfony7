@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Uuid;
 
 class IndexController extends AbstractController
 {
@@ -26,21 +27,26 @@ class IndexController extends AbstractController
         return $this->json(phpinfo());
     }
 
-    #[Route('/index/{id}', name: 'app_index_update', methods: ['GET', 'POST'])]
-    public function update(string $uuid, Request $request): JsonResponse
+    #[Route('/index/{uuid}',
+        name: 'app_index_update',
+        requirements: ['uuid' => '[0-9A-Fa-f]{4}(-?[0-9A-Fa-f]{4}){7}'],
+        methods: ['GET', 'POST']
+    )]
+    public function update(Uuid $uuid): JsonResponse
     {
         $index = $this->repository->findOneBy(['uuid' => $uuid]);
-        $data = json_decode($request->getContent(), true);
 
-        if ($index->getDeletedAt() !== null) {
-            return $this->json(["success" => false, "message" => "not found", "data" => null], Response::HTTP_NOT_FOUND);
-        }
+//        if ($index->getDeletedAt() !== null) {
+//            return $this->json('not found', Response::HTTP_NOT_FOUND);
+//        }
+
+        //$data = $this->repository->findOneBy(['uuid' => $uuid]);
 
         // Get one entity by uuid
         // Amplify data to this entity
         // Store undated entity with new data to DB + add datetime to updated_at
 
-        return $this->json(["success" => true , "message" => "ok", "data" => $data]);
+        return $this->json(['name' => $index->getName()], Response::HTTP_OK);
     }
 
     #[Route('/index/{id}', name: 'app_index_delete', methods: ['DELETE'])]
@@ -59,11 +65,8 @@ class IndexController extends AbstractController
      * @throws \Random\RandomException;
      * @throws \Exception;
      */
-    #[Route('/index/add',
-        name: 'app_index_create',
-        methods: ['POST'],
-    )]
-    public function create(Request $request): JsonResponse
+    #[Route('/index', name: 'app_index_add', methods: ['POST'])]
+    public function add(Request $request): JsonResponse
     {
         $name = $request->request->get('name') ;
 
@@ -102,13 +105,13 @@ class IndexController extends AbstractController
         );
     }
 
-    #[Route('/index/list', name: 'app_index_list', methods: ['GET'])]
+    #[Route('/index', name: 'app_index_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $list = $this->repository->findAllAsArray();
 
         if (count($list) == 0) {
-            return $this->json('empty set', Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => true, 'message' => 'empty database'], Response::HTTP_NOT_FOUND);
         }
 
         return $this->json($list, Response::HTTP_OK);

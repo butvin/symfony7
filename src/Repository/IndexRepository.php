@@ -19,7 +19,9 @@ class IndexRepository extends ServiceEntityRepository
         public function findAllAsArray(): array
         {
             return $this->createQueryBuilder('i')
-                ->orderBy('i.id', 'ASC')
+                ->andWhere('i.deletedAt IS NULL')
+                ->andWhere('i.active = TRUE')
+                ->orderBy('i.createdAt', 'DESC')
                 ->getQuery()
                 ->getArrayResult()
             ;
