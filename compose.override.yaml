@@ -1,4 +1,0 @@
-#services:
-#  database:
-#    ports:
-#      - "32774:5432"

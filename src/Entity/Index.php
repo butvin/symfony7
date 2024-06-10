@@ -3,46 +3,52 @@
 namespace App\Entity;
 
 use App\Repository\IndexRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: IndexRepository::class)]
-#[ORM\Table(name: 'index')]
+#[ORM\Table(name: "`INDEX_HASH`")]
+#[ORM\UniqueConstraint(name: "UNIQ_HASH", columns: ["hash"])]
+#[ORM\Index(name: "idx_i_created_at", columns: ["created_at"])]
 class Index
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    private Uuid $uuid;
+
+    #[ORM\Column(type: Types::TEXT, unique: true)]
+    private string $hash;
+
     #[ORM\Column]
-    private ?int $id = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $hash = null;
-
-    #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $active = null;
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
+    private ?bool $active = false;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $deletedAt = null;
 
-    public function getId(): ?int
+    public function getUuid(): ?Uuid
     {
-        return $this->id;
+        return $this->uuid;
     }
 
-    public function getHash(): ?string
+    public function getHash(): string
     {
         return $this->hash;
     }
 
-    public function setHash(?string $hash): static
+    public function setHash(string $hash): static
     {
         $this->hash = $hash;
 
@@ -93,6 +99,18 @@ class Index
     public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
     {
         $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function getActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(?bool $active): static
+    {
+        $this->active = $active;
 
         return $this;
     }
