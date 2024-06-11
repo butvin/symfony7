@@ -37,7 +37,7 @@ ifndef COMPOSE
 $(error COMPOSE is not set)
 endif
 
-DOCKER=docker --log-level trace
+DOCKER=docker --log-level debug
 ifndef DOCKER
 $(error DOCKER is not set)
 endif
@@ -98,7 +98,7 @@ endif
 
 # Container names
 PHP=app.application.php
-APP=app.application.php
+APP=$(PHP)
 
 #PHP=$(PREFIX).$(APPLICATION).php
 APACHE=$(PREFIX).$(APPLICATION).apache
@@ -145,7 +145,8 @@ top:
 	$(COMPOSE) top
 kill:
 	$(COMPOSE) kill
-
+ls:
+	$(COMPOSE) ls -a
 
 
 #---------------------------------------------------------------------------------------------------------------------
@@ -154,32 +155,29 @@ build:
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
 
-install:  composer migrate
-composer:composer-install
 
-composer-install:
+composer:
 	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction --optimize-autoloader -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
 
 composer-update:
-	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
-	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer update --ignore-platform-reqs --no-interaction -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
 
 clean:
-	$(COMPOSE) stop -t 1
 	$(COMPOSE) down -v --rmi local --remove-orphans
 
 
 fresh:
-	$(COMPOSE) stop -t 1
 	$(COMPOSE) down -v --rmi local --remove-orphans
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
+
+prune:
+	$(DOCKER) system prune -af --volumes
 
 
 
@@ -205,6 +203,9 @@ symfony:
 php-fpm:
 	$(COMPOSE) exec php-fpm /bin/bash
 
+httpd:
+	$(COMPOSE) exec -it 'httpd' /bin/sh
+
 #---------------------------------------------------------------------------------------------------------------------
 
 app:
@@ -212,9 +213,7 @@ app:
 
 migrate:
 	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing -vvv"
-#	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
-#	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:status -vvv"
-#	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:latest -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
 
 
 cc:
@@ -233,3 +232,9 @@ symfony-app-new-app-stable-raw:
 		--no-git \
 		--docker \
 		--debug
+
+docker-show-entrypoint:
+	$(DOCKER) container ls \
+		--all \
+		--format 'table {{ .Names }}\t{{ .Status }}\t{{ .Command }}' \
+		--no-trunc
