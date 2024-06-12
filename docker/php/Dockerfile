@@ -6,19 +6,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Get argument value passed in compose.yaml
 ARG APP_ENV
 
-# Set user ID & group ID & home directory & shell of www-data user.
-ARG USER_NAME=www-data
-ARG USER_ID=1000
-ARG GROUP_ID=1000
-ARG USER_DIR=/home/www-data
-
-# Some commands may use home dir for caching (like composer, npm or yarn) or for another reason.
-RUN mkdir -p ${USER_DIR} \
-    && chown -R ${USER_ID}:${GROUP_ID} ${USER_DIR} \
-    && usermod --uid ${USER_ID} --home ${USER_DIR} --shell /bin/bash ${USER_NAME} \
-    && groupmod --gid ${GROUP_ID} ${USER_NAME}
-
-
 # https://github.com/docker-library/docs/tree/master/php#how-to-install-more-php-extensions
 # https://github.com/docker-library/docs/tree/master/php#php-core-extensions
 # https://docs.docker.com/go/dockerfile-aptget-best-practices/
@@ -37,24 +24,18 @@ RUN set -eux; \
   && docker-php-ext-install -j$(nproc) gd
 
 
+RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql \
+    && docker-php-ext-enable pdo_mysql pdo_pgsql
+
+
 # composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 
-#RUN apt-get update && apt-get install -y libicu-dev locales \
-#  && docker-php-ext-configure intl \
-#  && docker-php-ext-install intl \
-#  && docker-php-ext-enable intl \
-
-
-RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql \
-    && docker-php-ext-enable pdo_mysql pdo_pgsql
-
-# Add PECL extensions, see
-# https://github.com/docker-library/docs/tree/master/php#pecl-extensions
-# This example adds the 'redis' and 'xdebug'.
-RUN pecl update-channels && pecl install xdebug  && docker-php-ext-enable xdebug
-
+# Add PECL extensions, see https://github.com/docker-library/docs/tree/master/php#pecl-extensions
+RUN pecl update-channels && pecl install xdebug && docker-php-ext-enable xdebug
+# https://xdebug.org/docs/all_settings
+COPY ./docker/php/xdebug.ini "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini"
 
 # Compile 'rdkafka' extensions from source code.
 #ENV LIBRDKAFKA_VERSION v0.11.0
@@ -106,14 +87,21 @@ RUN if [ ${APP_ENV} = "dev" ]; then \
 # https://github.com/docker-library/docs/tree/master/php#configuration
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 #RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-
-# Copy app files from the app directory, excluding .dockerignore files.
-COPY --chown=1000:1000 . /var/www/html/
-COPY ./docker/php/xdebug.ini "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini"
-COPY ./docker/php/upload.ini "$PHP_INI_DIR/conf.d/custom.ini"
+COPY ./docker/php/custom.ini "$PHP_INI_DIR/conf.d/custom.ini"
 
 
 # Switch to a non-privileged user (defined in the base image) that the app will run under
+# Set user ID & group ID & home directory & shell of www-data user.
+ARG USER_NAME=www-data
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+ARG USER_DIR=/home/www-data
+
+# Some commands may use home dir for caching (like composer, npm or yarn) or for another reason.
+RUN mkdir -p ${USER_DIR} \
+    && chown -R ${USER_ID}:${GROUP_ID} ${USER_DIR} \
+    && usermod --uid ${USER_ID} --home ${USER_DIR} --shell /bin/bash ${USER_NAME} \
+    && groupmod --gid ${GROUP_ID} ${USER_NAME}
 # https://docs.docker.com/go/dockerfile-user-best-practices/
 USER ${USER_NAME}
 

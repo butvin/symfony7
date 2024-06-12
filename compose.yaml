@@ -7,8 +7,8 @@ networks:
 services:
   httpd:
     container_name: app.application.apache
-    image: httpd:2.4-alpine
-    #build: './docker/apache'
+    #image: httpd:2.4-alpine
+    build: './docker/apache'
     networks:
       - local-network
     depends_on:
@@ -18,7 +18,7 @@ services:
     volumes:
       - ./:/var/www/html/
       - ./docker/apache/vhost.conf:/usr/local/apache2/conf/app.conf
-    entrypoint: ["/bin/sh", "-c", "echo Include conf/app.conf >> /usr/local/apache2/conf/httpd.conf && httpd -D FOREGROUND"]
+    #entrypoint: ["/bin/sh", "-c", "echo Include conf/app.conf >> /usr/local/apache2/conf/httpd.conf && httpd -D FOREGROUND"]
 
   php-fpm:
     container_name: app.application.php
@@ -36,7 +36,7 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       PHP_IDE_CONFIG: 'serverName=host.docker.internal'
-      XDEBUG_TRIGGER: 1
+      XDEBUG_TRIGGER: ${XDEBUG_TRIGGER:-1}
     volumes:
       - ./:/var/www/html/
     tty: true
@@ -63,3 +63,4 @@ services:
 
 volumes:
   database_data:
+    name: postgres-files-storage

@@ -24,12 +24,16 @@ class IndexController extends AbstractController
     #[Route('/index/index', name: 'app_index_index', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
-        return $this->json(phpinfo());
+        return $this->json(
+            xdebug_info() & phpinfo()
+        );
     }
 
     #[Route('/index/{uuid}',
         name: 'app_index_update',
-        requirements: ['uuid' => '[0-9A-Fa-f]{4}(-?[0-9A-Fa-f]{4}){7}'],
+        requirements: [
+            'uuid' => '[0-9A-Fa-f]{4}(-?[0-9A-Fa-f]{4}){7}'
+        ],
         methods: ['GET', 'POST']
     )]
     public function update(Uuid $uuid): JsonResponse

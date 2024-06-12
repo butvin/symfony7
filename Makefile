@@ -1,7 +1,4 @@
 #  This Makefile is a tool for building, up, down, running, and cleaning the project data
-## A
-
-## SECTION #1
 
 # APP_ENV is a current environment name
 ifndef APP_ENV
@@ -44,9 +41,6 @@ endif
 
 
 
-
-
-
 # The LOCAL microservice database is used only for current purposes.
 # You may find its value in the docker-compose.yml file in the database service section.
 # Often it is a container name unique name or other unique sensitive param.
@@ -57,13 +51,11 @@ DATABASE=
 
 
 
-
 # The GLOBAL database is used for all microservices purposes.
 MAIN_DATABASE=
 #ifndef MAIN_DATABASE
 #$(error MAIN_DATABASE is not set)
 #endif
-
 
 
 
@@ -78,7 +70,6 @@ endif
 
 
 
-
 # The app's service name prefix.
 # An optional name of the docker-compose.yml services, containers name prefix. Used for tags building, running, and cleaning the project.
 # Usefully when you need to run multiple projects, and micro-systems on the same host.
@@ -89,24 +80,25 @@ endif
 
 
 
-
 # The COMPOSE_PROJECT_NAME is a docker-compose project name.
 ifndef COMPOSE_PROJECT_NAME
 $(error COMPOSE_PROJECT_NAME is not set)
 endif
 
 
+
 # Container names
 PHP=app.application.php
+APACHE=$(PREFIX).$(APPLICATION).apache
+DATABASE=$(PREFIX).$(APPLICATION).database
 APP=$(PHP)
 
 #PHP=$(PREFIX).$(APPLICATION).php
-APACHE=$(PREFIX).$(APPLICATION).apache
-REDIS=$(PREFIX).$(APPLICATION).redis
-DATABASE=$(PREFIX).$(APPLICATION).database
+#APACHE=$(PREFIX).$(APPLICATION).apache
+#REDIS=$(PREFIX).$(APPLICATION).redis
+#DATABASE=$(PREFIX).$(APPLICATION).database
 #ZOOKEEPER=$(PREFIX).application.zookeeper
 #KAFKA=$(PREFIX).application.kafka
-
 #MYSQL=$(PREFIX).application.mysql
 #ELASTICSEARCH=$(PREFIX).application.elasticsearch
 #KIBANA=$(PREFIX).application.kibana
@@ -114,7 +106,6 @@ DATABASE=$(PREFIX).$(APPLICATION).database
 #FILEBEAT=$(PREFIX).application.filebeat
 #NGINX=$(PREFIX).application.nginx
 #NGINX_PROXY=$(PREFIX).application.nginx-proxy
-
 
 #MYSQL_PASSWORD=
 #MYSQL_ROOT_PASSWORD=
@@ -151,9 +142,7 @@ ls:
 
 #---------------------------------------------------------------------------------------------------------------------
 
-build:
-	$(COMPOSE) build --no-cache
-	$(COMPOSE) up -d --force-recreate
+build: fresh composer migrate about
 
 
 composer:
@@ -172,9 +161,9 @@ clean:
 
 
 fresh:
-	$(COMPOSE) down -v --rmi local --remove-orphans
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
+
 
 prune:
 	$(DOCKER) system prune -af --volumes
@@ -197,31 +186,40 @@ htop:
 		--format \
 			"table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.BlockIO}}\t{{.MemPerc}}\t{{.PIDs}}"
 
-symfony:
+php:
 	$(DOCKER) exec -it $(PHP) /bin/bash
 
 php-fpm:
-	$(COMPOSE) exec php-fpm /bin/bash
+	$(COMPOSE) exec 'php-fpm' /bin/bash
 
 httpd:
 	$(COMPOSE) exec -it 'httpd' /bin/sh
 
 #---------------------------------------------------------------------------------------------------------------------
 
+
+
 app:
 	$(DOCKER) exec -it $(PHP) fish
 
 migrate:
 	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing -vvv"
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
 
+migrate-list:
+	$(DsOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
 
-cc:
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console c:c -vvv"
+migrate-status:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:status -vvv"
 
+cc-cache-clear:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console cache:clear -vvv"
 
+about:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console about -vvv"
 
 #---------------------------------------------------------------------------------------------------------------------
+
+
 
 symfony-app-new-stable:
 	$(DOCKER) exec -it $(PHP) bash -c \
