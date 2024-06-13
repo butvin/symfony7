@@ -39,6 +39,7 @@ services:
       XDEBUG_TRIGGER: ${XDEBUG_TRIGGER:-1}
     volumes:
       - ./:/var/www/html/
+      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
     tty: true
 
   database:

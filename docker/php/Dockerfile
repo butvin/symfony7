@@ -23,19 +23,17 @@ RUN set -eux; \
   && docker-php-ext-configure gd --with-freetype --with-jpeg --with-avif \
   && docker-php-ext-install -j$(nproc) gd
 
-
 RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql \
     && docker-php-ext-enable pdo_mysql pdo_pgsql
-
 
 # composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-
 # Add PECL extensions, see https://github.com/docker-library/docs/tree/master/php#pecl-extensions
 RUN pecl update-channels && pecl install xdebug && docker-php-ext-enable xdebug
 # https://xdebug.org/docs/all_settings
-COPY ./docker/php/xdebug.ini "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini"
+#COPY ./docker/php/xdebug.ini "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini"
+
 
 # Compile 'rdkafka' extensions from source code.
 #ENV LIBRDKAFKA_VERSION v0.11.0
@@ -81,7 +79,6 @@ RUN if [ ${APP_ENV} = "dev" ]; then \
             apt-get update && apt-get install --fix-broken -y symfony-cli \
         ; \
     fi
-
 
 # Use the default production or development configuration for PHP runtime arguments, see
 # https://github.com/docker-library/docs/tree/master/php#configuration
