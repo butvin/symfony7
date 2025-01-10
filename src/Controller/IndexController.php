@@ -18,16 +18,7 @@ class IndexController extends AbstractController
     public function __construct(
         private readonly IndexRepository $repository,
         private readonly EntityManagerInterface $em
-    ) {
-    }
-
-    #[Route('/index/index', name: 'app_index_index', methods: ['GET'])]
-    public function index(Request $request): JsonResponse
-    {
-        return $this->json(
-            xdebug_info() & phpinfo()
-        );
-    }
+    ) {}
 
     #[Route('/index/{uuid}',
         name: 'app_index_update',
