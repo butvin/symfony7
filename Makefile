@@ -12,29 +12,16 @@ ifndef APP_ENV
 $(error APP_ENV is not set)
 endif
 
-# The APP_NAME is a microservice or application name
-ifndef APP_NAME
-$(error APP_NAME is not set)
-endif
-
-# The APPLICATION is a microservice name.
-#APPLICATION=$(APPLICATION)
-#APPLICATION=application
-ifndef APPLICATION
-$(error APPLICATION is not set)
-endif
-
-
 ### PROCESS #1.1 - GET ENVIRONMENT: domain, service, node, get actual ENVs, check required vars & files
 # Use 'docker compose' as engine instead a legacy plugin 'docker-compose'.
 # Actually it is the same thing, but the first one is a new way to use docker-compose.
 # [docs](https://docs.docker.com/compose/migrate/)
-COMPOSE=docker --log-level debug compose
+COMPOSE=docker compose
 ifndef COMPOSE
 $(error COMPOSE is not set)
 endif
 
-DOCKER=docker --log-level debug
+DOCKER=docker
 ifndef DOCKER
 $(error DOCKER is not set)
 endif
@@ -70,16 +57,6 @@ endif
 
 
 
-# The app's service name prefix.
-# An optional name of the docker-compose.yml services, containers name prefix. Used for tags building, running, and cleaning the project.
-# Usefully when you need to run multiple projects, and micro-systems on the same host.
-PREFIX=$(APP_NAME)
-ifndef PREFIX
-$(error PREFIX is not set)
-endif
-
-
-
 # The COMPOSE_PROJECT_NAME is a docker-compose project name.
 ifndef COMPOSE_PROJECT_NAME
 $(error COMPOSE_PROJECT_NAME is not set)
@@ -88,9 +65,9 @@ endif
 
 
 # Container names
-PHP=app.application.php
-APACHE=$(PREFIX).$(APPLICATION).apache
-DATABASE=$(PREFIX).$(APPLICATION).database
+PHP=$(COMPOSE_PROJECT_NAME).php
+APACHE=$(COMPOSE_PROJECT_NAME).php.apache
+DATABASE=$(COMPOSE_PROJECT_NAME).database.postgres
 APP=$(PHP)
 
 #PHP=$(PREFIX).$(APPLICATION).php

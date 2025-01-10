@@ -20,7 +20,7 @@ services:
 
 
   php-fpm:
-    container_name: ${COMPOSE_PROJECT_NAME}.fpm-php
+    container_name: ${COMPOSE_PROJECT_NAME}.php
     build:
       context: .
       dockerfile: './docker/php/Dockerfile'
@@ -42,7 +42,7 @@ services:
     restart: unless-stopped
 
   database:
-    container_name: app.application.postgres
+    container_name: ${COMPOSE_PROJECT_NAME}.database.postgres
     image: postgres:16.3-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-symfony7_db}
