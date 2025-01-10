@@ -51,7 +51,8 @@ services:
     ports:
       - "32769:5432"
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
+     - ./:/var/www/html/
+     - ./docker/redis/data:/var/lib/postgresql/data:rw
     networks:
      - default
     healthcheck:
@@ -59,7 +60,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
-    restart: always
+    restart: unless-stopped
 
 
   elasticsearch:
@@ -74,6 +75,7 @@ services:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - discovery.type=single-node
     volumes:
+      - ./:/var/www/html/
       - ./docker/elasticsearch/data:/usr/share/elasticsearch/data:rw
     ulimits:
       memlock:
