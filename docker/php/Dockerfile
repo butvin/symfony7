@@ -20,10 +20,11 @@ RUN set -eux; \
     libpng-dev \
     libpq-dev \
     libavif-dev \
+    libldap-dev \
   && docker-php-ext-configure gd --with-freetype --with-jpeg --with-avif \
   && docker-php-ext-install -j$(nproc) gd
 
-RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql \
+RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql ldap \
     && docker-php-ext-enable pdo_mysql pdo_pgsql
 
 # composer
