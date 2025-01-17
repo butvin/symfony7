@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM php:8.4-fpm
+FROM php:8.3-fpm
 
 ENV DEBIAN_FRONTEND=noninteractive
 
