@@ -177,7 +177,7 @@ httpd:
 
 
 app:
-	$(DOCKER) exec -it $(PHP) fish
+	$(DOCKER) exec -it -u root $(PHP) /bin/bash
 
 migrate:
 	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing -vvv"

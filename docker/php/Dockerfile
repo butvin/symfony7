@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -24,7 +24,7 @@ RUN set -eux; \
   && docker-php-ext-configure gd --with-freetype --with-jpeg --with-avif \
   && docker-php-ext-install -j$(nproc) gd
 
-RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql ldap \
+RUN docker-php-ext-install zip mysqli pdo pdo_mysql pdo_pgsql ldap fileinfo exif \
     && docker-php-ext-enable pdo_mysql pdo_pgsql
 
 # composer
