@@ -27,6 +27,7 @@ services:
         arguments: [ '@Symfony\Component\Ldap\Adapter\ExtLdap\Adapter' ]
         tags:
             - ldap
+
     Symfony\Component\Ldap\Adapter\ExtLdap\Adapter:
         arguments:
             - host: "ortros.ipa.krakenleads.com"
