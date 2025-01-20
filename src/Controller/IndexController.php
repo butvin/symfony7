@@ -60,7 +60,7 @@ class IndexController extends AbstractController
      * @throws \Random\RandomException;
      * @throws \Exception;
      */
-    #[Route('/index', name: 'app_index_add', methods: ['POST'])]
+    #[Route('/index/index', name: 'app_index_index', methods: ['POST', 'GET'])]
     public function add(Request $request): JsonResponse
     {
         $name = $request->request->get('name') ;
@@ -100,7 +100,7 @@ class IndexController extends AbstractController
         );
     }
 
-    #[Route('/index/index', name: 'app_index_list', methods: ['GET'])]
+    #[Route('/index/list', name: 'app_index_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $list = $this->repository->findAllAsArray();

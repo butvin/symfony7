@@ -5,6 +5,9 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
+        jwt:
+            lexik_jwt:
+                class: App\Security\User
         kraken_ldap:
             ldap:
                 service: Symfony\Component\Ldap\Ldap
@@ -20,26 +23,35 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
             provider: kraken_ldap
-        main:
-            lazy: true
+        login:
+            pattern:  ^/api/auth/login
             provider: kraken_ldap
-            form_login_ldap:
-                default_target_path:  /index/index
-                check_path: /auth/login
-                login_path: /auth/login
+            stateless: true
+            json_login_ldap:
+                check_path: /api/auth/login
+                login_path: /api/auth/login
                 service: Symfony\Component\Ldap\Ldap
                 dn_string: 'dc=ipa,dc=krakenleads,dc=com'
                 query_string: '(&(uid={user_identifier})(objectclass=person)(memberof=cn=infra,cn=groups,cn=accounts,dc=ipa,dc=krakenleads,dc=com))'
                 search_dn: "uid=svc-symfony,cn=users,cn=accounts,dc=ipa,dc=krakenleads,dc=com"
                 search_password: '%env(LDAP_SEARCH_PASSWORD)%'
-            access_denied_url: /shared/index
-            logout:
-                path: app_auth_logout
-                # where to redirect after logout
-                target: app_auth_login
-                invalidate_session: true
-                delete_cookies:
-                    REMEMBERME: ~
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+#            logout:
+#                path: app_auth_logout
+#                invalidate_session: true
+#                delete_cookies:
+#                    REMEMBERME: ~
+
+#        api:
+#            pattern: ^/api
+#            provider: jwt
+#            stateless: true
+#            jwt: ~
+
+        main:
+            lazy: true
+            provider: kraken_ldap
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -50,8 +62,9 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/auth/login, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: ROLE_USER }
+        - { path: ^/public, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 

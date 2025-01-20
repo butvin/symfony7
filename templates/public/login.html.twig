@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} LOGIN {% endblock %}
+
+{% block body %}
+    <h4 class="h3 mb-3 font-weight-normal">Ldap Sign In</h4>
+
+    <form id="app_login_form" enctype="multipart/form-data">
+        <label for="username">Username:</label><br />
+        <input
+            type="text"
+            name="username"
+            id="username"
+            class="form-control"
+            autocomplete="username"
+            required
+    /><br />
+        <label for="password">Password:  </label><br />
+        <input
+            type="password"
+            name="password"
+            id="password"
+            class="form-control"
+            autocomplete="off"
+            required
+            autofocus
+        /><br />
+
+        <button id="sendBtn" class="btn btn-lg btn-primary" type="submit">Sign in Ldap</button>
+    </form>
+
+    <p><small>1DayInYourLife</small></p>
+
+
+    <script>
+        $(document).ready(function () {
+            $('#sendBtn').on('click', function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+                let usernameVal = $('#username').val();
+                let passwordVal = $('#password').val();
+                const data = { "username": usernameVal,  "password": passwordVal };
+                console.log(data)
+                $.ajax({
+                    url: '/api/auth/login',
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        const response = data.token
+                        console.log(response);
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        console.log(xhr);
+                        console.log(textStatus);
+                        console.log(errorThrown);
+                    }
+                })
+            });
+        });
+    </script>
+{% endblock %}

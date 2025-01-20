@@ -4,18 +4,40 @@
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}{% endblock %}
+
+        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+
+        {% block stylesheets %}
+        {% endblock %}
 
         {% block javascripts %}{% endblock %}
     </head>
-    <body>
-        <header style="background: #555555;">
-            <nav>
-{#                <b style="color: chocolate;">{{ app.user.userIdentifier }}</b>#}
-                <b style="color: #eff6ff;"><a href="{{ path('app_auth_logout') }}">logout</a></b>
-            </nav>
-            <hr />
-        </header>
+    <body style="width: 75%;margin: 0 auto;">
+        <nav style="background: #93c5fd; float: left;height: 100%">
+            <ul>
+                <li><span style="color: #f1ffef;"><a href="{{ path('app_shared_index') }}">shared index</a></span></li>
+                <li><span style="color: #f1ffef;"><a href="{{ path('app_shared_list') }}">shared list</a></span></li>
+                <li><span style="color: #f1ffef;"><a href="{{ path('app_index_list') }}">index list</a></span></li>
+                <li><span style="color: #f1ffef;"><a href="{{ path('app_index_index') }}">index index</a></span></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+                <li><a href="#">### ###</a></li>
+            </ul>
+        </nav>
 
         <section>
             {% block body %}{% endblock %}

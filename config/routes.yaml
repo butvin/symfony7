@@ -1,5 +1,12 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
+api:
+    resource: '../src/Controller/'
     type: attribute
+    prefix: /api
+
+app_public_login:
+    path: /public/login
+    controller: App\Controller\Public\PublicController::login
+
+app_public_logout:
+    path: /public/logout
+    controller: App\Controller\Public\PublicController::logout
