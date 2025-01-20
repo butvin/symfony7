@@ -100,13 +100,13 @@ class IndexController extends AbstractController
         );
     }
 
-    #[Route('/index', name: 'app_index_list', methods: ['GET'])]
+    #[Route('/index/index', name: 'app_index_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $list = $this->repository->findAllAsArray();
 
         if (count($list) == 0) {
-            return $this->json(['success' => true, 'message' => 'empty database'], Response::HTTP_NOT_FOUND);
+            return $this->json(['success' => true, 'message' => 'empty database'], Response::HTTP_OK);
         }
 
         return $this->json($list, Response::HTTP_OK);

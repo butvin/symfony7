@@ -1,17 +1,45 @@
 security:
+    hide_user_not_found:  false
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        kraken_ldap:
+            ldap:
+                service: Symfony\Component\Ldap\Ldap
+                base_dn: "dc=ipa,dc=krakenleads,dc=com"
+                search_dn: "uid=svc-symfony,cn=users,cn=accounts,dc=ipa,dc=krakenleads,dc=com"
+                search_password: '%env(LDAP_SEARCH_PASSWORD)%'
+                default_roles: [ 'ROLE_USER' ]
+                uid_key: uid
+                filter: '(&(uid={user_identifier})(objectclass=person)(memberof=cn=infra,cn=groups,cn=accounts,dc=ipa,dc=krakenleads,dc=com))'
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+            provider: kraken_ldap
         main:
             lazy: true
-            provider: users_in_memory
+            provider: kraken_ldap
+            form_login_ldap:
+                default_target_path:  /index/index
+                check_path: /auth/login
+                login_path: /auth/login
+                service: Symfony\Component\Ldap\Ldap
+                dn_string: 'dc=ipa,dc=krakenleads,dc=com'
+                query_string: '(&(uid={user_identifier})(objectclass=person)(memberof=cn=infra,cn=groups,cn=accounts,dc=ipa,dc=krakenleads,dc=com))'
+                search_dn: "uid=svc-symfony,cn=users,cn=accounts,dc=ipa,dc=krakenleads,dc=com"
+                search_password: '%env(LDAP_SEARCH_PASSWORD)%'
+            access_denied_url: /shared/index
+            logout:
+                path: app_auth_logout
+                # where to redirect after logout
+                target: app_auth_login
+                invalidate_session: true
+                delete_cookies:
+                    REMEMBERME: ~
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -22,6 +50,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 

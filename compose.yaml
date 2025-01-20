@@ -2,8 +2,8 @@ networks:
   default:
     name: ${COMPOSE_PROJECT_NAME}-default-network
 
-
 services:
+
   apache:
     container_name: ${COMPOSE_PROJECT_NAME}.apache
     build: './docker/apache'
@@ -17,7 +17,6 @@ services:
       - ./:/var/www/html/
       - ./docker/apache/vhost.conf:/usr/local/apache2/conf/app.conf
     restart: unless-stopped
-
 
   php-fpm:
     container_name: ${COMPOSE_PROJECT_NAME}.php
@@ -38,9 +37,11 @@ services:
       XDEBUG_TRIGGER: ${XDEBUG_TRIGGER:-1}
     volumes:
       - ./:/var/www/html/
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
       - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./docker/php/ldap.conf:/etc/openldap/ldap.conf
+      - ./docker/php/ldap.conf:/etc/ldap/ldap.conf
     restart: unless-stopped
-
 
   database:
     container_name: ${COMPOSE_PROJECT_NAME}.database.postgres
@@ -61,6 +62,28 @@ services:
       retries: 5
       start_period: 60s
     restart: unless-stopped
+
+#  rabbitmq:
+#    image: "rabbitmq:3-management"
+#    container_name: ${COMPOSE_PROJECT_NAME}.rabbitmq
+#    ports:
+#      - "15672:15672"
+#      - "5672:5672"
+#    environment:
+#      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
+#      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+#      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+##      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="-rabbit disk_free_limit 2147483648"
+#    healthcheck:
+#      test: rabbitmq-diagnostics -q ping
+#      interval: 5s
+#      timeout: 5s
+#      retries: 3
+#    volumes:
+#      - ./docker/rabbitmq/data:/var/lib/rabbitmq
+#    networks:
+#      - default
+#    restart: always
 
 
 #  elasticsearch:
@@ -105,13 +128,13 @@ services:
 #      - default
 #    restart: unless-stopped
 
-
-#  redis:
-#    container_name: ${COMPOSE_PROJECT_NAME}.redis
+  redis:
+    container_name: ${COMPOSE_PROJECT_NAME}.redis
 #    image: redis:7.2
-#    command: redis-server
-#    volumes:
-#      - ./docker/redis/data:/data
-#    networks:
-#      - default
-#    restart: unless-stopped
+    image: redis/redis-stack:7.4.0-v2
+    command: redis-server
+    volumes:
+      - ./docker/redis/data:/data
+    networks:
+      - default
+    restart: unless-stopped

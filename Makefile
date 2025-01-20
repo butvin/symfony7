@@ -123,7 +123,6 @@ build: fresh composer migrate about
 
 
 composer:
-	$(DOCKER) exec -it $(PHP) rm -rf $(WORKING_DIR)/vendor/
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer install --ignore-platform-reqs --no-interaction --optimize-autoloader -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
@@ -132,9 +131,13 @@ composer-update:
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer update --ignore-platform-reqs --no-interaction -vvv'
 	$(DOCKER) exec -it $(PHP) bash -c 'cd $(WORKING_DIR) && composer clear-cache --no-interaction -vvv'
 
+hclean:
+	$(DOCKER) exec -it -u root $(PHP) rm -rf $(WORKING_DIR)/vendor
+	$(DOCKER) exec -it -u root $(PHP) rm -rf $(WORKING_DIR)/docker/*/data/
 
 clean:
 	$(COMPOSE) down -v --rmi local --remove-orphans
+
 
 
 fresh:
@@ -180,19 +183,24 @@ app:
 	$(DOCKER) exec -it -u root $(PHP) /bin/bash
 
 migrate:
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing -v"
 
 migrate-list:
-	$(DsOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -vvv"
+	$(DsOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:list -v"
 
 migrate-status:
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:status -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console doctrine:migrations:status -v"
 
-cc-cache-clear:
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console cache:clear -vvv"
+cc:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console cache:clear -v"
 
 about:
-	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console about -vvv"
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "php bin/console about -v"
+
+#---------------------------------------------------------------------------------------------------------------------
+
+cron-logs:
+	$(DOCKER) exec -it $(PHP) /bin/bash -c "tail -f /var/log/cron.log"
 
 #---------------------------------------------------------------------------------------------------------------------
 
