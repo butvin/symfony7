@@ -10,3 +10,9 @@ app_public_login:
 app_public_logout:
     path: /public/logout
     controller: App\Controller\Public\PublicController::logout
+
+vue:
+    path: /{route}
+    controller: App\Controller\DefaultController::index
+    requirements:
+        route: .*

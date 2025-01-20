@@ -3,8 +3,13 @@
 {% block title %} LOGIN {% endblock %}
 
 {% block body %}
-    <h4 class="h3 mb-3 font-weight-normal">Ldap Sign In</h4>
+    <h1>LOGIN</h1>
 
+    <p style="background: antiquewhite;width:75%;">
+        <label for="result"></label>
+        <textarea id="result" rows="7" style="position: relative; margin: 0 auto; width: 100%"></textarea>
+    </p>
+    <h4 class="h3 mb-3 font-weight-normal">Ldap Sign In</h4>
     <form id="app_login_form" enctype="multipart/form-data">
         <label for="username">Username:</label><br />
         <input
@@ -47,8 +52,10 @@
                     contentType: "application/json",
                     data: JSON.stringify(data),
                     success: function (data) {
-                        const response = data.token
-                        console.log(response);
+                        const resp = data.token
+                        console.log(resp);
+                        $('#result').text(resp);
+                        // alert(resp)
                     },
                     error: function(xhr, textStatus, errorThrown) {
                         console.log(xhr);
@@ -56,6 +63,8 @@
                         console.log(errorThrown);
                     }
                 })
+
+            return false;
             });
         });
     </script>

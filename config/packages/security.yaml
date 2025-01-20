@@ -5,9 +5,9 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        jwt:
-            lexik_jwt:
-                class: App\Security\User
+#        jwt:
+#            lexik_jwt:
+#                class: App\Security\User
         kraken_ldap:
             ldap:
                 service: Symfony\Component\Ldap\Ldap
